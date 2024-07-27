@@ -1,0 +1,48 @@
+version: '3.7'
+services:
+  elasticsearch:
+    image: bitnami/elasticsearch:7.10.1
+    container_name: elasticsearch
+    environment:
+      - ELASTICSEARCH_HOST=elasticsearch
+      - ELASTICSEARCH_PORT_NUMBER=9200
+      - ELASTICSEARCH_CLUSTER_NAME=docker-cluster
+      - ELASTICSEARCH_NODE_NAME=elasticsearch
+    volumes:
+      - esdata:/bitnami/elasticsearch
+    ports:
+      - 9200:9200
+    networks:
+      - elk
+
+  kibana:
+    image: bitnami/kibana:7.10.1
+    container_name: kibana
+    environment:
+      - KIBANA_ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - 5601:5601
+    networks:
+      - elk
+
+  logstash:
+    image: bitnami/logstash:7.10.1
+    container_name: logstash
+    volumes:
+      - ./logstash/config:/bitnami/logstash/config
+      - ./logstash/pipeline:/bitnami/logstash/pipeline
+    environment:
+      - LS_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - 5044:5044
+    networks:
+      - elk
+
+volumes:
+  esdata:
+    driver: local
+
+networks:
+  elk:
+    driver: bridge
+
